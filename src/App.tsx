@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import Home from "./pages/Home";
+import Chat from "./components/Chat";
+import Header from "./components/Header";
+import SideBar from "./components/SideBar";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Message {
+	text: string;
 }
 
-export default App
+const App: React.FC = () => {
+	const [messages, setMessages] = useState<Message[]>([]); // Estado para mensagens da Home
+	const [sidebarMessages, setSidebarMessages] = useState<string[]>([]); // Estado para mensagens do Sidebar
+
+	// Função para adicionar uma nova mensagem ao array de mensagens
+	const handleSendMessage = (msg: string) => {
+		setMessages([...messages, { text: msg }]);
+	};
+
+	// Função para limpar as mensagens da home
+	const clearMessages = () => {
+		setMessages([]);
+	};
+
+	// Função para enviar a primeira palavra da home para o sidebar
+	const handleSendSidebar = () => {
+		const firstWord = getFirstWordFromHome();
+		if (firstWord) {
+			setSidebarMessages((prevMessages) => [...prevMessages, firstWord]); // Adiciona a nova mensagem abaixo das anteriores
+		}
+	};
+
+	// Função para obter a primeira palavra da primeira mensagem
+	const getFirstWordFromHome = (): string => {
+		if (messages.length > 0) {
+			const firstMessage = messages[0].text;
+			return firstMessage.split(" ")[0];
+		}
+		return "";
+	};
+
+	return (
+		<article className="flex flex-row h-screen bg-[#121212]">
+			<div className="hidden md:flex md:z-20 md:top-0">
+				<SideBar messages={sidebarMessages} />{" "}
+				{/* Passa a lista de mensagens para o SideBar */}
+			</div>
+			<div className="flex flex-col justify-between w-full">
+				<Header
+					clearMessages={clearMessages}
+					handleSendSidebar={handleSendSidebar}
+				/>
+				<Home messages={messages} />
+				<Chat onSendMessage={handleSendMessage} />
+			</div>
+		</article>
+	);
+};
+
+export default App;
